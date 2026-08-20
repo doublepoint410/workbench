@@ -3,32 +3,64 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#B8860B">
+<meta name="theme-color" content="#FF2D78">
 <link rel="apple-touch-icon" href="icon.png">
 <title>我的工作台</title>
 <style>
-  body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#faf6ee;font-family:-apple-system,"PingFang SC","Helvetica Neue",sans-serif}
-  .card{text-align:center;padding:40px 24px}
-  .dot{width:38px;height:38px;margin:0 auto 18px;border-radius:50%;background:#E9A319;animation:pulse 1.2s ease-in-out infinite}
-  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.92)}}
-  h1{font-size:18px;color:#3a3a3a;font-weight:600;margin:0 0 8px}
-  p{font-size:14px;color:#8a8a8a;margin:0}
-  .err{display:none}
+  body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(160deg,#fff0f6,#ffe3ef);font-family:-apple-system,"PingFang SC","Helvetica Neue",sans-serif}
+  .card{text-align:center;padding:40px 28px;width:100%;max-width:340px}
+  .logo{width:76px;height:76px;margin:0 auto 20px;border-radius:18px;box-shadow:0 6px 20px rgba(255,45,120,.25);display:flex;align-items:center;justify-content:center;background:linear-gradient(160deg,#FFAACD,#FF2D78)}
+  .logo span{font-size:44px;font-weight:700;color:#1a1a1a;line-height:1}
+  h1{font-size:20px;color:#2a2a2a;font-weight:700;margin:0 0 6px}
+  .sub{font-size:14px;color:#9a7a88;margin:0 0 28px}
+  .btn{display:inline-block;background:linear-gradient(160deg,#FF2D78,#e61e63);color:#fff;font-size:16px;font-weight:600;padding:14px 44px;border-radius:26px;text-decoration:none;box-shadow:0 6px 16px rgba(255,45,120,.35);cursor:pointer;border:none}
+  .btn:active{transform:scale(.97)}
+  .count{margin-top:18px;font-size:13px;color:#b08a99}
+  .tip{margin-top:26px;font-size:12px;color:#b58a9c;line-height:1.6;background:#fff;border-radius:12px;padding:12px 14px;text-align:left}
 </style>
 </head>
 <body>
 <div class="card">
-  <div class="dot"></div>
-  <h1>正在连接工作台…</h1>
-  <p id="msg">请稍候，自动跳转中</p>
+  <div class="logo"><span>点</span></div>
+  <h1>我的工作台</h1>
+  <p class="sub">小红书创作 · 随时随地上线</p>
+  <a class="btn" id="go" href="#">立即进入</a>
+  <div class="count" id="count">8 秒后自动进入</div>
+  <div class="tip">想把工作台存到主屏幕？点浏览器右上角<b>分享</b> → 选「<b>添加到主屏幕</b>」，以后从图标一键进入（不用再输网址）。</div>
 </div>
 <script>
+var target='';
+var n=8;
+var timer=null;
+var paused=false;
+function jump(){
+  if(timer){clearInterval(timer);timer=null;}
+  if(target){location.replace(target);}
+}
 fetch('url.txt',{cache:'no-store'}).then(function(r){return r.text()}).then(function(t){
   var u=(t||'').replace(/\s+/g,'');
-  if(/^https?:\/\//.test(u)){location.replace(u);}
-  else{document.getElementById('msg').textContent='地址配置异常，请稍后再试';}
+  if(/^https?:\/\//.test(u)){
+    target=u;
+    document.getElementById('go').href=u;
+    timer=setInterval(function(){
+      if(paused)return;
+      n--;
+      if(n<=0){jump();return;}
+      document.getElementById('count').textContent=n+' 秒后自动进入';
+    },1000);
+  }else{
+    document.getElementById('count').textContent='地址配置异常，请稍后再试';
+  }
 }).catch(function(){
-  document.getElementById('msg').textContent='暂时无法连接，请检查网络后重试';
+  document.getElementById('count').textContent='暂时无法连接，请检查网络后重试';
+});
+document.getElementById('go').addEventListener('click',function(e){
+  e.preventDefault();
+  jump();
+});
+// 点分享/页面失焦时暂停倒计时，避免保存图标过程中跳走
+document.addEventListener('visibilitychange',function(){
+  if(document.hidden)paused=true;
 });
 </script>
 </body>
